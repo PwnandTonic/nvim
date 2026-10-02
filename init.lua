@@ -2,6 +2,11 @@ if vim.fn.has("win32") == 1 then
     vim.opt.shellslash = false
 end
 
+-- Disable unused Neovim language providers
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_ruby_provider = 0
+
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
