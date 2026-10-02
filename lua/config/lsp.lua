@@ -38,10 +38,27 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end,
 })
 
+local home = vim.uv.os_homedir()
+local is_windows = vim.fn.has("win32") == 1
+
+local lua_ls = is_windows
+    and vim.fs.joinpath(
+        home,
+        "Tools",
+        "lua-language-server",
+        "bin",
+        "lua-language-server.exe"
+    )
+    or vim.fs.joinpath(
+        home,
+        "Tools",
+        "lua-language-server",
+        "bin",
+        "lua-language-server"
+    )
+
 vim.lsp.config("lua_ls", {
-    cmd = {
-        "C:\\Users\\Eric\\Tools\\lua-language-server\\bin\\lua-language-server.exe",
-    },
+    cmd = { lua_ls },
 
     filetypes = { "lua" },
 
@@ -81,7 +98,9 @@ vim.lsp.enable("lua_ls")
 
 vim.lsp.config("basedpyright", {
     cmd = { "basedpyright-langserver", "--stdio" },
+
     filetypes = { "python" },
+
     root_markers = {
         "pyproject.toml",
         "setup.py",

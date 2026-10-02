@@ -6,11 +6,37 @@ vim.pack.add({
 
 local dap = require("dap")
 
+local home = vim.uv.os_homedir()
+local is_windows = vim.fn.has("win32") == 1
+local path_separator = is_windows and "\\" or "/"
+
 local dapui = require("dapui")
+
+local lldb_dap = is_windows
+    and "C:\\Program Files\\LLVM\\bin\\lldb-dap.exe"
+    or "/usr/bin/lldb-dap"
+
+dap.adapters.lldb = {
+    type = "executable",
+    command = lldb_dap,
+    name = "lldb",
+}
+
+local python_debugger = is_windows
+    and "C:\\Users\\Eric\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
+    or vim.fs.joinpath(
+        vim.uv.os_homedir(),
+        ".local",
+        "share",
+        "nvim",
+        "debugpy-venv",
+        "bin",
+        "python"
+    )
 
 dap.adapters.python = {
     type = "executable",
-    command = "C:\\Users\\Eric\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    command = python_debugger,
     args = { "-m", "debugpy.adapter" },
 }
 
@@ -20,14 +46,8 @@ dap.configurations.python = {
         request = "launch",
         name = "Launch current file",
         program = "${file}",
-        pythonPath = "C:\\Users\\Eric\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        pythonPath = python_debugger,
     },
-}
-
-dap.adapters.lldb = {
-    type = "executable",
-    command = "C:\\Program Files\\LLVM\\bin\\lldb-dap.exe",
-    name = "lldb",
 }
 
 dap.configurations.cpp = {
@@ -35,15 +55,17 @@ dap.configurations.cpp = {
         name = "Launch executable",
         type = "lldb",
         request = "launch",
+
         program = function()
-            return vim.fn.input(
-                "Path to executable: ",
-                vim.fn.getcwd() .. "\\",
-                "file"
-            )
+        return vim.fn.input(
+            "Path to executable: ",
+            vim.fn.getcwd() .. path_separator,
+                            "file"
+        )
         end,
+
         cwd = "${workspaceFolder}",
-        stopOnEntry = true,
+        stopOnEntry = false,
         args = {},
     },
 }

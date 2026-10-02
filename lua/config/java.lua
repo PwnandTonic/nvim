@@ -1,12 +1,32 @@
-local home = vim.env.USERPROFILE
-local jdtls_dir = home .. "\\Tools\\jdtls"
+local home = vim.uv.os_homedir()
+local is_windows = vim.fn.has("win32") == 1
 
-local launcher = vim.fn.glob(jdtls_dir .. "\\plugins\\org.eclipse.equinox.launcher_*.jar")
+local javac = vim.fn.resolve(vim.fn.exepath("javac"))
+local java_home = vim.fs.dirname(vim.fs.dirname(javac))
 
-local config_dir = jdtls_dir .. "\\config_win"
+local jdtls_dir = vim.fs.joinpath(home, "Tools", "jdtls")
 
-local java_debug = home
-	.. "\\Tools\\java-debug\\com.microsoft.java.debug.plugin\\target\\com.microsoft.java.debug.plugin-0.53.2.jar"
+local launcher = vim.fn.glob(
+    vim.fs.joinpath(
+        jdtls_dir,
+        "plugins",
+        "org.eclipse.equinox.launcher_*.jar"
+    )
+)
+
+local config_dir = vim.fs.joinpath(
+    jdtls_dir,
+    is_windows and "config_win" or "config_linux"
+)
+
+local java_debug = vim.fs.joinpath(
+    home,
+    "Tools",
+    "java-debug",
+    "com.microsoft.java.debug.plugin",
+    "target",
+    "com.microsoft.java.debug.plugin-0.53.2.jar"
+)
 
 local function find_root(bufnr)
 	return vim.fs.root(bufnr, {
@@ -39,7 +59,11 @@ vim.api.nvim_create_autocmd("FileType", {
 		local project_name = vim.fs.basename(root)
 
 		-- Persistent JDTLS project metadata.
-		local workspace_dir = vim.fn.stdpath("data") .. "\\jdtls-workspaces\\" .. project_name
+		local workspace_dir = vim.fs.joinpath(
+            vim.fn.stdpath("data"),
+            "jdtls-workspaces",
+            project_name
+        )
 
 		local config = {
 			cmd = {
@@ -77,7 +101,7 @@ vim.api.nvim_create_autocmd("FileType", {
 						runtimes = {
 							{
 								name = "JavaSE-25",
-								path = "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.4.101-hotspot",
+								path = java_home,
 								default = true,
 							},
 						},
